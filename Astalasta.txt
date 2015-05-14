@@ -1,0 +1,162 @@
+ASTALASTA
+
+Server:
+    Server concorrente multi processo
+    Protocollo utilizzato: TCP
+    Porta usata per l'instaurazione della connessione:  20000
+    
+    1) Creo il socket
+    2) Associo l'indirizzo IP e il numero di porta al socket (bind)
+    3) Rimango in attesa di connessioni
+    4) Quando arriva la connessione l'accetto
+      4a) L'accetto ma effettuo un fork o lancio un thread per effettuare
+          le operazioni richieste
+      4b) Scambio di dati (invio/ricevo)
+      4c) Quando sono finite le operazioni chiudo la trasmissione e chiudo
+          il processo o il thread
+    5) Ripeti punto 4 fino alla fine dei tempi
+    
+    Operazioni che consente il server:
+    1) Effettuare il login al sito dell'aste online
+    2) Inserire un oggetto all'asta
+    3) Effettuare una puntata in un'asta in corso
+    4) Verificare gli oggetti acquistati
+    5) Verificare stato oggetti a cui è stata effettuata una puntata 
+    
+    Tutte le informazioni di queste operazioni devono essere inserite in un database.
+    
+    Un thread per ogni client connesso.
+    
+    Necessita uso di variabili mutex per la gestione concorrenziale nel database
+    
+Client:
+    Uso delle librerie grafiche QT
+    
+    1) Crea il socket
+    2) Effettua la connessione al server
+    3) Tenta il login
+     3a) Login errato -> Messaggio di errore -> punto 3)
+     3b) Login corretto -> punto 4)
+    4) Schermata divisa in 2 parti:
+       prima parte: lista delle categorie
+       seconda parte: lista degli ultimi oggetti inseriti oppure 
+                      lista degli oggetti della categoria scelta
+    Opzioni consentite:
+        -puntare ad un'asta
+        -aggiungere un oggetto all'asta
+        
+    Effettuare una puntata in asta corrente:
+        1) Client: effettua una puntata tramite finestra apposita 
+           (minimo rialzo = 0.5)
+        2) Client: Invia al server la puntata 
+           (dati = id utente, id oggetto, puntata)
+        3) Server: Riceve la puntata dal client
+        4) Server: Registra la puntata nel database
+        5) Server: Risponde con l'avvenuto successo del database
+        6) Server: Avverte tutti i client connessi della puntata effettuata (???)
+        
+    Mettere all'asta un oggetto:
+        1) Client: registra l'oggetto tramite una finestra apposita
+        2) Client: invia al server la registrazione effettuata
+        3) Server: riceve la registrazione dal client
+        4) Server: registra la puntata nel database
+        5) Server: risponde con l'avvenuto successo della registrazione
+        
+    Ottenere la lista dell'oggetto:
+        1) Client: richiede la lista degli oggetti (con foto) [numero di oggetti = chiesti all'utente]
+           1b) con eventuale filtro sulla categoria (??)
+        2) Client: invia la richiesta della lista degli oggetti al server
+        3) Server: riceve la richiesta dal client
+        4) Server: legge dal database e ottiene gli N oggetti richiesti
+        5) Server: invia al client gli oggetti richiesti
+        6) Client: mostra gli oggetti richiesti
+
+Struttura pacchetti (ipotesi UDP) : (65535 byte a IPV4 packet)
+|<----20 bytes---------><-----8 bytes--><-65507 bytes-->
+|---IPV4 Header   -----|--UDP Header---|--Data---------|
+
+|----   INT     ----|----   INT       ----|--------------|
+|---Tipo servizio---|---Numero segmento---|----Data------|
+
+Tipo servizio: 
+    1) Richiesta login (da client)
+    2) Puntata effettuata (da client)
+    3) Visualizzazione oggetti (da client)
+    4) Risposta login (da server)
+    5) Aggiornamento puntate (da server)
+    6) Risposta a visualizzazione oggetti (da server)
+    
+    7) Qualche tipo di ACK?
+Numero segmento: 
+    In quanto l'UDP non è affidabile e non assicura lo stesso ordine per la
+    ricezione di pacchetti nell'ordine in cui sono stati inviati, è necessario
+    un campo che tiene conto dell'ordine del numero segmento per una riordinazione
+    da parte del client. Inoltre la segmentazione è effettuata a livello
+    applicativo a differenza del TCP.
+         
+         
+Struttura pacchetti (ipotesi TCP) :
+|----   INT     ----|--------------|
+|---Tipo servizio---|----Data------|
+       
+Tipo servizio: 32bit INT
+    1) Richiesta login (da client)
+    2) Puntata effettuata (da client)
+    3) Visualizzazione oggetti (da client)
+    4) Risposta login (da server)
+    5) Aggiornamento puntate (da server)
+    6) Risposta a visualizzazione oggetti (da server)
+    7) Errore generico (possibile eliminazione della risposta login)
+
+----------LATO CLIENT    
+Servizio 1) Richiesta login
+    Dati richiesti: username e password entrambi cifrati usando MD5
+    Struttura campo data:
+        32 caratteri (cifre esadecimali) per l'username
+        32 caratteri(cifre esadecimali) per la password
+        
+Servizio 2) Puntata effettuata/ da effettuare
+    Dati richiesti: id utente, id oggetto, puntata effettuata
+	4 byte 32 bit (int) per l'id dell'utente
+        4 byte 32 bit (int) per l'id dell'oggetto
+        8 byte 64 bit (double) per la puntata da effettuare
+
+Servizio 3) Visualizzazione oggetti
+    Dati richiesti: offset (da quale pagina/oggetto partire),
+        32 bit (int) per l'offset
+
+----------LATO SERVER 
+
+        
+Servizio 4) Risposta al login
+    Dati richiesti: errore 
+        4 byte 32 bit (intero) id dell'utente 
+    Valori possibili:
+	id > 0, login corretto
+	id == 0, login NON corretto
+        
+Servizio 5) Aggiornamento puntate
+    Dati richiesti: id oggetto, prezzo
+        32 bit (int) per l'id dell'oggetto
+        64 bit (double) per il prezzo
+                
+Servizio 6) Risposta a visualizzazione oggetti (anche più di uno)
+    Dati richiesti: id oggetto, nome, descrizione, prezzoAttuale, tempoRimanente
+        32 bit (int) per l'id dell'oggetto
+        30 caratteri per il nome dell'oggetto
+        50 caratteri per la descrizione dell'oggetto
+        64 bit (double) per il prezzo dell'oggetto
+/*
+								 Servizio 7) Errore generico
+								 Dati richiesti: errore
+								      32 bit (int) per specificare l'errore
+								 Valori possibili:
+								      0 : nessun errore
+								      1 : errore nel login
+								      2 : errore nella puntata
+*/
+Invio/ricezione dei dati:
+1) Invio dei una richiesta/risposta da parte dei due host della comunicazione
+2) Lettura dei primi 4 byte per sapere qual è la richiesta/servizio da offrire
+3) Istanza della classe a cui il servizio punta e lettura dei restanti byte rimasti
+
