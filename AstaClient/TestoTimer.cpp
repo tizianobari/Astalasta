@@ -31,7 +31,7 @@ void TestoTimer::visualizzaTempo()
     // Formo la stringa con ore minuti e secondi
     char orario[20];
     sprintf(orario, "%i:%i:%i", secondiTotali/3600, (secondiTotali/60)%60, secondiTotali%60);
-    cout << orario << "\n";
+    //cout << orario << "\n";
     this->setText(orario);
     //cout << (tempo->toString()).toStdString() <<"\n";
 }
@@ -43,8 +43,8 @@ void TestoTimer::calcolaTempo(int sec)
     this->ore = sec/3600;
     this->minuti = (sec/60) % 60;
     this->secondi = sec % 60;
-    cout << "ore: " << this->ore << "\n";
+    /*cout << "ore: " << this->ore << "\n";
     cout << "minuti: " << this->minuti<< "\n";
-    cout << "secondi: " << this->secondi << "\n";
+    cout << "secondi: " << this->secondi << "\n";*/
     //tempo->setHMS(ore, minuti, secondi);
 }

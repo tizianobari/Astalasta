@@ -23,7 +23,7 @@ FinestraNuovoOggetto::FinestraNuovoOggetto(QWidget* padre, int socketClient) : Q
     
     // Istanza oggetti grafici
     etichettaNome = new QLabel("Nome", this);
-    etichettaDescrizione = new QLabel("Cognome", this);
+    etichettaDescrizione = new QLabel("Descrizione", this);
     etichettaPrezzo = new QLabel("Prezzo", this);
     casellaNome = new QLineEdit(this);
     casellaDescrizione = new QLineEdit(this);
@@ -56,6 +56,9 @@ void FinestraNuovoOggetto::inviaNuovoOggetto()
     string descrizione = casellaDescrizione->text().toStdString();
     double prezzo = casellaPrezzo->value();
     
+    cerr << "Nome" << nome.c_str() << "\n";
+    cerr << "Descrizione" << descrizione.c_str() << "\n";
+    cerr << "Prezzo" << prezzo << "\n";
     // Invio sul socket
     send(socketClient, &servizio, 4, 0);
     send(socketClient, nome.c_str(), 30, 0);

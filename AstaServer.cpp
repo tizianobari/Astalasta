@@ -526,10 +526,15 @@ void* operazioniServer(void* parametri)
                     // Inserimento nuovo oggetto: nome, descrizione, prezzo
                     case 8:
                         // Ricezione dei dati inviati dal client
+			nomeOggetto = new char[31];
+			descrizioneOggetto = new char[51];
                         recv(connessioni->socketClient, nomeOggetto, 30, 0);
                         recv(connessioni->socketClient, descrizioneOggetto, 50, 0);
                         recv(connessioni->socketClient, &prezzoOggetto, 8, 0);
-                        
+                        nomeOggetto[30] = 0;
+			descrizioneOggetto[50] = 0;
+			printf("\nDato letto %s, %s, %f", nomeOggetto, descrizioneOggetto, prezzoOggetto);
+			
                         // Formazione del comando SQL
                         sprintf(comandoSql, "INSERT INTO Articoli (nome, descrizione, prezzoIniziale, prezzoAttuale, dataInizio, dataFine) VALUES ('%s', '%s', %f, %f, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY))"
                         , nomeOggetto, descrizioneOggetto, prezzoOggetto, prezzoOggetto);
@@ -550,7 +555,8 @@ void* operazioniServer(void* parametri)
                         /// FINE CONCORRENZA: Sblocco della variabile mutex dopo aver ricevuto i dati
                         pthread_mutex_unlock(&(connessioni->semaforoDatabase));
                         
-                        
+                        delete nomeOggetto;
+                        delete descrizioneOggetto;
                     break;
                 }
             }

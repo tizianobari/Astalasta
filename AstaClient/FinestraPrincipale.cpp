@@ -264,6 +264,7 @@ void FinestraPrincipale::effettuaPuntata()
     int servizio = 2;
     prezzo = casellePrezziOfferti[index]->value();
     
+    cout << "Invio i dati\n";
     // Invio la richiesta al server
     send(socketClient, &servizio, 4, 0);
     send(socketClient, &idUtente, 4, 0);
