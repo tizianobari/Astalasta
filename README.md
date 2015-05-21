@@ -1,5 +1,5 @@
 # Astalasta
-Progetto esame di stato 2015 ITiS indirizzo Informatico. Progetto di asta online server scritto in C++ e client C++ con utilizzo librerie grafiche QT
+Progetto esame di stato 2015 ITIS - ITT articolazione Informatica. Progetto di asta online server scritto in C++ e client C++ con utilizzo librerie grafiche QT
 
 TODO: 
       Accettazione delle puntate verificando l'effettiva validità della puntata ricevuta ( puntataRicevuta > puntataUltima)
